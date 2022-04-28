@@ -1,3 +1,13 @@
+
+## Notes on running:
+
+- first use data_converter.py to convert train, test, valid data
+- run `python3 RNN/train_rnn.py --train-file data/job_dataset_converted_train.json --test-file data/job_dataset_converted_test.json --validation-file data/job_dataset_converted_valid.json --word2vec-file /home/jsk/skill-prediction/Multi-Label-Text-Classification/data/word2vec_100.kv --num-classes 2548 --topK 100 --epochs 10 --evaluate-steps 200 --num-checkpoints 5 --checkpoint-steps 400`
+  or similar command.
+
+- RNN is Bi-GRU, CNN contains the Kim-CNN code. I'll make additional folders to make it easier to run Bi-LSTM & LSTM. 
+  
+
 # Deep Learning for Multi-Label Text Classification
 
 [![Python Version](https://img.shields.io/badge/language-python3.6-blue.svg)](https://www.python.org/downloads/) [![Build Status](https://travis-ci.org/RandolphVI/Multi-Label-Text-Classification.svg?branch=master)](https://travis-ci.org/RandolphVI/Multi-Label-Text-Classification) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c45aac301b244316830b00b9b0985e3e)](https://www.codacy.com/app/chinawolfman/Multi-Label-Text-Classification?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=RandolphVI/Multi-Label-Text-Classification&amp;utm_campaign=Badge_Grade) [![License](https://img.shields.io/github/license/RandolphVI/Multi-Label-Text-Classification.svg)](https://www.apache.org/licenses/LICENSE-2.0) [![Issues](https://img.shields.io/github/issues/RandolphVI/Multi-Label-Text-Classification.svg)](https://github.com/RandolphVI/Multi-Label-Text-Classification/issues)
