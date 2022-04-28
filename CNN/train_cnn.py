@@ -1,5 +1,5 @@
-# -*- coding:utf-8 -*-
-__author__ = 'Randolph'
+import numpy as np
+# np.random.bit_generator = np.random._bit_generator
 
 import os
 import sys
@@ -9,7 +9,8 @@ import logging
 sys.path.append('../')
 logging.getLogger('tensorflow').disabled = True
 
-import numpy as np
+
+
 import tensorflow as tf
 from tensorboard.plugins import projector
 from text_cnn import TextCNN
