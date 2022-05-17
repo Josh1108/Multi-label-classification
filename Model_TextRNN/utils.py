@@ -1,12 +1,24 @@
 # utils.py
 
 import torch
-from torchtext import data
+from torchtext.legacy import data
 from torchtext.vocab import Vectors
 import spacy
 import pandas as pd
 import numpy as np
 from sklearn.metrics import accuracy_score
+import json
+import recsys_metrics
+
+def metric_calc(true_labels, predicted_labels):
+    dicti={}
+    for k in [5,10,20,50,100]:
+        dicti[f'Precision@{k}'] = recsys_metrics.precision(predicted_labels,true_labels,k).int()
+        dicti[f'Recall@{k}'] = recsys_metrics.recall(predicted_labels,true_labels,k).int()
+        dicti[f'ndcg@k'] = recsys_metrics.normalized_dcg(predicted_labels,true_labels,k).int()
+
+    dicti['mrr'] = recsys_metrics.mean_reciprocal_rank(predicted_labels,target=true_labels)
+    return dicti
 
 class Dataset(object):
     def __init__(self, config):
@@ -17,7 +29,7 @@ class Dataset(object):
         self.vocab = []
         self.word_embeddings = {}
     
-    def parse_label(self, label):
+    def parse_label(self, labels):
         '''
         Get the actual labels from label string
         Input:
@@ -25,17 +37,23 @@ class Dataset(object):
         Returns:
             label (int) : integer value corresponding to label string
         '''
-        return int(label.strip()[-1])
+        return [x for x in labels]
 
     def get_pandas_df(self, filename):
         '''
         Load the data into Pandas.DataFrame object
         This will be used to convert data to torchtext object
         '''
-        with open(filename, 'r') as datafile:     
-            data = [line.strip().split(',', maxsplit=1) for line in datafile]
-            data_text = list(map(lambda x: x[1], data))
-            data_label = list(map(lambda x: self.parse_label(x[0]), data))
+        data_text =[]
+        data_label = []
+        with open(filename, 'r') as datafile:
+            data = [line.strip().split('\n', maxsplit=1) for line in datafile]
+            for row in data:
+                dicti = json.load(row)
+            _data_text = " ".join(dicti["features_content"])
+            data_text.append(_data_text)
+            _data_label = dicti["labels_index"]
+            data_label.append(_data_label)
 
         full_df = pd.DataFrame({"text":data_text, "label":data_label})
         return full_df
@@ -53,7 +71,7 @@ class Dataset(object):
             val_file (String): absolute path to validation file
         '''
 
-        NLP = spacy.load('en')
+        NLP = spacy.load('en_core_web_sm')
         tokenizer = lambda sent: [x.text for x in NLP.tokenizer(sent) if x.text != " "]
         
         # Creating Field for data
@@ -110,8 +128,7 @@ def evaluate_model(model, iterator):
         else:
             x = batch.text
         y_pred = model(x)
-        predicted = torch.max(y_pred.cpu().data, 1)[1] + 1
-        all_preds.extend(predicted.numpy())
-        all_y.extend(batch.label.numpy())
-    score = accuracy_score(all_y, np.array(all_preds).flatten())
+        all_preds.append(y_pred)
+        all_y.append(batch.label)
+    score = metric_calc(torch.stack(all_y), torch.stack(all_preds))
     return score
