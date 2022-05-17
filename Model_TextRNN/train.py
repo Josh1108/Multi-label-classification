@@ -30,7 +30,7 @@ if __name__=='__main__':
     if torch.cuda.is_available():
         model.cuda()
     model.train()
-    optimizer = optim.SGD(model.parameters(), lr=config.lr)
+    optimizer = optim.Adam(model.parameters(), lr=config.lr)
     BCELog = nn.BCEWithLogitsLoss()
     model.add_optimizer(optimizer)
     model.add_loss_op(BCELog)
@@ -41,7 +41,7 @@ if __name__=='__main__':
     startTime = time.time()
     for i in range(config.max_epochs):
         print ("Epoch: {}".format(i))
-        train_loss,val_accuracy = model.run_epoch(dataset.train_iterator, dataset.val_iterator, i)
+        train_loss, val_accuracy = model.run_epoch(dataset.train_iterator, dataset.val_iterator, i)
         train_losses.append(train_loss)
         val_accuracies.append(val_accuracy)
     executionTime = (time.time() - startTime)

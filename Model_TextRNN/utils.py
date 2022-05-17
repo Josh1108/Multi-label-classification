@@ -13,7 +13,7 @@ import time
 
 def metric_calc(true_labels, predicted_labels):
     dicti={}
-    for k in [5,10,20,50,100]:
+    for k in [5,10,20,30,50,100]:
         dicti[f'Precision@{k}'] = recsys_metrics.precision(predicted_labels,true_labels,k)
         dicti[f'Recall@{k}'] = recsys_metrics.recall(predicted_labels,true_labels,k)
         dicti[f'ndcg@k'] = recsys_metrics.normalized_dcg(predicted_labels,true_labels,k)
