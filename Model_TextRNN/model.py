@@ -14,12 +14,18 @@ class TextRNN(nn.Module):
         # Embedding Layer
         self.embeddings = nn.Embedding(vocab_size, self.config.embed_size)
         self.embeddings.weight = nn.Parameter(word_embeddings, requires_grad=False)
-        
-        self.lstm = nn.LSTM(input_size = self.config.embed_size,
+        if self.config.gru==1:
+            self.lstm = nn.GRU(input_size = self.config.embed_size,
                             hidden_size = self.config.hidden_size,
                             num_layers = self.config.hidden_layers,
                             dropout = self.config.dropout_keep,
                             bidirectional = self.config.bidirectional)
+        else:
+            self.lstm = nn.LSTM(input_size = self.config.embed_size,
+                                hidden_size = self.config.hidden_size,
+                                num_layers = self.config.hidden_layers,
+                                dropout = self.config.dropout_keep,
+                                bidirectional = self.config.bidirectional)
         
         self.dropout = nn.Dropout(self.config.dropout_keep)
         

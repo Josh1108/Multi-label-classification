@@ -7,7 +7,8 @@ class Config(object):
     bidirectional = True
     output_size = 2548
     max_epochs = 20
-    lr = 0.25
+    lr = 0.4
     batch_size = 64
     max_sen_len = 50 # Sequence length for RNN
     dropout_keep = 0.8
+    gru = 0
