@@ -138,6 +138,6 @@ def evaluate_model(model, iterator):
         all_preds.extend(y_pred)
         all_y.extend(batch.label)
     endtime = time.time() - starttime
-    print("time taken in ms for pred", endtime/(len(all_preds)*1000))
+    print("time taken in ms for pred", endtime*1000/(len(all_preds)))
     score = metric_calc(torch.stack(all_y).cpu(), torch.stack(all_preds).cpu())
     return score
