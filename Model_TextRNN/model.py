@@ -4,6 +4,7 @@ import torch
 from torch import nn
 import numpy as np
 from utils import *
+import time
 
 class TextRNN(nn.Module):
     def __init__(self, config, vocab_size, word_embeddings):
@@ -73,12 +74,12 @@ class TextRNN(nn.Module):
                 x = batch.text
                 y = (batch.label - 1).type(torch.LongTensor)
             y_pred = self.__call__(x)
-            loss = self.loss_op(y_pred, y)
+            loss = self.loss_op(y_pred, y.float())
             loss.backward()
             losses.append(loss.data.cpu().numpy())
             self.optimizer.step()
     
-            if i % 100 == 0:
+            if i % 500 == 0:
                 print("Iter: {}".format(i+1))
                 avg_train_loss = np.mean(losses)
                 train_losses.append(avg_train_loss)
@@ -87,7 +88,7 @@ class TextRNN(nn.Module):
                 
                 # Evalute Accuracy on validation set
                 val_accuracy = evaluate_model(self, val_iterator)
-                print("\tVal Accuracy: {:.4f}".format(val_accuracy))
+                print("\tVal Accuracy:",val_accuracy)
                 self.train()
                 
         return train_losses, val_accuracies

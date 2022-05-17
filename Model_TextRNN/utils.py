@@ -1,7 +1,7 @@
 # utils.py
 
 import torch
-from torchtext.legacy import data
+from torchtext import data
 from torchtext.vocab import Vectors
 import spacy
 import pandas as pd
@@ -9,13 +9,14 @@ import numpy as np
 from sklearn.metrics import accuracy_score
 import json
 import recsys_metrics
+import time
 
 def metric_calc(true_labels, predicted_labels):
     dicti={}
     for k in [5,10,20,50,100]:
-        dicti[f'Precision@{k}'] = recsys_metrics.precision(predicted_labels,true_labels,k).int()
-        dicti[f'Recall@{k}'] = recsys_metrics.recall(predicted_labels,true_labels,k).int()
-        dicti[f'ndcg@k'] = recsys_metrics.normalized_dcg(predicted_labels,true_labels,k).int()
+        dicti[f'Precision@{k}'] = recsys_metrics.precision(predicted_labels,true_labels,k)
+        dicti[f'Recall@{k}'] = recsys_metrics.recall(predicted_labels,true_labels,k)
+        dicti[f'ndcg@k'] = recsys_metrics.normalized_dcg(predicted_labels,true_labels,k)
 
     dicti['mrr'] = recsys_metrics.mean_reciprocal_rank(predicted_labels,target=true_labels)
     return dicti
@@ -47,14 +48,19 @@ class Dataset(object):
         data_text =[]
         data_label = []
         with open(filename, 'r') as datafile:
-            data = [line.strip().split('\n', maxsplit=1) for line in datafile]
+            data = [line.strip() for line in datafile]
             for row in data:
-                dicti = json.load(row)
-            _data_text = " ".join(dicti["features_content"])
-            data_text.append(_data_text)
-            _data_label = dicti["labels_index"]
-            data_label.append(_data_label)
-
+                dicti = json.loads(row)
+                _data_text = " ".join(dicti["features_content"])
+                data_text.append(_data_text)
+                _data_label = dicti["labels_index"]
+                lbls=[]
+                for i in range(self.config.output_size):
+                    if i in _data_label:
+                        lbls.append(1)
+                    else:
+                        lbls.append(0)
+                data_label.append(lbls)
         full_df = pd.DataFrame({"text":data_text, "label":data_label})
         return full_df
     
@@ -96,7 +102,7 @@ class Dataset(object):
         else:
             train_data, val_data = train_data.split(split_ratio=0.8)
         
-        TEXT.build_vocab(train_data, vectors=Vectors(w2v_file))
+        TEXT.build_vocab(train_data, vectors=w2v_file)
         self.word_embeddings = TEXT.vocab.vectors
         self.vocab = TEXT.vocab
         
@@ -122,13 +128,16 @@ class Dataset(object):
 def evaluate_model(model, iterator):
     all_preds = []
     all_y = []
+    starttime = time.time()
     for idx,batch in enumerate(iterator):
         if torch.cuda.is_available():
             x = batch.text.cuda()
         else:
             x = batch.text
         y_pred = model(x)
-        all_preds.append(y_pred)
-        all_y.append(batch.label)
-    score = metric_calc(torch.stack(all_y), torch.stack(all_preds))
+        all_preds.extend(y_pred)
+        all_y.extend(batch.label)
+    endtime = time.time() - starttime
+    print("time taken in ms for pred", endtime/(len(all_preds)*1000))
+    score = metric_calc(torch.stack(all_y).cpu(), torch.stack(all_preds).cpu())
     return score
