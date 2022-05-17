@@ -42,8 +42,11 @@ class TextRNN(nn.Module):
         # x.shape = (max_sen_len, batch_size)
         embedded_sent = self.embeddings(x)
         # embedded_sent.shape = (max_sen_len=20, batch_size=64,embed_size=300)
+        if self.config.gru ==1:
+            lstm_out, h_n = self.lstm(embedded_sent)
+        else:
+            lstm_out, (h_n,c_n) = self.lstm(embedded_sent)
 
-        lstm_out, (h_n,c_n) = self.lstm(embedded_sent)
         final_feature_map = self.dropout(h_n) # shape=(num_layers * num_directions, 64, hidden_size)
         
         # Convert input to (64, hidden_size * hidden_layers * num_directions) for linear layer

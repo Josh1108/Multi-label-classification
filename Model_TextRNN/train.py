@@ -19,7 +19,7 @@ if __name__=='__main__':
     if len(sys.argv) > 3:
         test_file = sys.argv[2]
     
-    w2v_file = 'glove.6B.100d'
+    w2v_file = 'fasttext.en.300d'
     
     dataset = Dataset(config)
     dataset.load_data(w2v_file, train_file, test_file,valid_file)
@@ -50,7 +50,6 @@ if __name__=='__main__':
     train_acc = evaluate_model(model, dataset.train_iterator)
     val_acc = evaluate_model(model, dataset.val_iterator)
     test_acc = evaluate_model(model, dataset.test_iterator)
-    print(train_acc, test_acc, val_acc)
     print ('Final Training Accuracy:',train_acc)
     print ('Final Validation Accuracy:',val_acc)
     print ('Final Test Accuracy:',test_acc)
